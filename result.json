@@ -1,0 +1,113 @@
+[
+  {
+    "location": "(Folkungagatan tillfälligt avstängd)",
+    "city": "Stockholm",
+    "country": "SE",
+    "measurements": [
+      {
+        "parameter": "pm10",
+        "value": -99,
+        "lastUpdated": "2018-04-04T15:00:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Sweden",
+        "averagingPeriod": { "value": 1, "unit": "hours" }
+      },
+      {
+        "parameter": "no2",
+        "value": -99,
+        "lastUpdated": "2018-04-04T15:00:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Sweden",
+        "averagingPeriod": { "value": 1, "unit": "hours" }
+      }
+    ]
+  },
+  {
+    "location": "1-r khoroolol",
+    "city": "Ulaanbaatar",
+    "country": "MN",
+    "distance": 5077809.751273264,
+    "measurements": [
+      {
+        "parameter": "pm10",
+        "value": 199,
+        "lastUpdated": "2019-03-13T21:45:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      },
+      {
+        "parameter": "pm25",
+        "value": 217,
+        "lastUpdated": "2019-03-13T21:45:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      },
+      {
+        "parameter": "so2",
+        "value": 21,
+        "lastUpdated": "2019-03-13T21:45:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      },
+      {
+        "parameter": "no2",
+        "value": 30,
+        "lastUpdated": "2019-03-13T21:45:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      },
+      {
+        "parameter": "co",
+        "value": 57,
+        "lastUpdated": "2019-03-13T21:45:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      }
+    ],
+    "coordinates": { "latitude": 47.91798, "longitude": 106.84806 }
+  },
+  {
+    "location": "100 ail",
+    "city": "Ulaanbaatar",
+    "country": "MN",
+    "distance": 5082481.960414189,
+    "measurements": [
+      {
+        "parameter": "o3",
+        "value": 14,
+        "lastUpdated": "2019-03-13T22:00:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      },
+      {
+        "parameter": "co",
+        "value": 16,
+        "lastUpdated": "2019-03-13T22:00:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      },
+      {
+        "parameter": "no2",
+        "value": 3,
+        "lastUpdated": "2019-03-07T10:00:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      },
+      {
+        "parameter": "so2",
+        "value": 7,
+        "lastUpdated": "2019-03-13T22:00:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      },
+      {
+        "parameter": "pm10",
+        "value": 93,
+        "lastUpdated": "2019-03-13T22:00:00.000Z",
+        "unit": "µg/m³",
+        "sourceName": "Agaar.mn"
+      }
+    ],
+    "coordinates": { "latitude": 47.932907, "longitude": 106.92139 }
+  }
+]
