@@ -19,7 +19,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var ctx = context.TODO()
+var ctx = context.Background()
 
 const measurementsColName = "measurements"
 const citiesColName = "cities"
@@ -28,7 +28,7 @@ const countriesColName = "countries"
 type dataProcessParams struct {
 	url          string
 	col          collection
-	callBackFunc func(url string, collection *mongo.Collection) (int, error)
+	callBackFunc func(url string, collection dataprocessor.DataAccessInterface) (int, error)
 }
 
 type collections struct {
@@ -87,7 +87,7 @@ func main() {
 		httpRetryCount = fs.Int("http-retry-count", 3, "Number maximum retries of http requests")
 		mongoURI       = fs.String("mongo-uri", "mongodb://localhost:27018", "Number of results per request")
 		dbName         = fs.String("db-name", "AQ_DB", "Name of used mongo db")
-		schedDuration  = fs.Uint64("scheduler-seconds", 3600, "Name of used mongo db")
+		schedDuration  = fs.Uint64("scheduler-seconds", 3600, "Scheduler interval in seoconds")
 	)
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
 	logger = level.NewFilter(logger, level.AllowInfo())
@@ -124,6 +124,7 @@ func main() {
 func processAllData(d dataprocessor.DataProcessor, dataParams []dataProcessParams) {
 	for _, data := range dataParams {
 		logger.Log("info", fmt.Sprintf("Processing data for %s", data.url))
-		d.ProcessData(data.url, data.col.col, data.callBackFunc)
+		err := d.ProcessData(data.url, data.col.col, data.callBackFunc)
+		logger.Log("error", fmt.Sprintf("error processing data for url %s: %w", data.url, err))
 	}
 }

@@ -61,10 +61,10 @@ type DataAccessInterface interface {
 
 // DataProcessor interface for methods
 type DataProcessor interface {
-	ProcessMeasurements(url string, colletion *mongo.Collection) (int, error)
-	ProcessCities(url string, collection *mongo.Collection) (int, error)
-	ProcessCountries(url string, collection *mongo.Collection) (int, error)
-	ProcessData(url string, collection *mongo.Collection, dataProcessFunc func(url string, collection *mongo.Collection) (int, error)) error
+	ProcessMeasurements(url string, colletion DataAccessInterface) (int, error)
+	ProcessCities(url string, collection DataAccessInterface) (int, error)
+	ProcessCountries(url string, collection DataAccessInterface) (int, error)
+	ProcessData(url string, collection DataAccessInterface, dataProcessFunc func(url string, collection DataAccessInterface) (int, error)) error
 }
 
 // NewDataProcessor creates a dataProcessor.
@@ -72,7 +72,7 @@ func NewDataProcessor(httpClient *http.Client, batchSize int) DataProcessor {
 	return dataProcessor{httpClient, batchSize}
 }
 
-func (d dataProcessor) ProcessMeasurements(url string, collection *mongo.Collection) (int, error) {
+func (d dataProcessor) ProcessMeasurements(url string, collection DataAccessInterface) (int, error) {
 	resultsSlice, total, err := d.getResults(url)
 	if err != nil {
 		return 0, err
@@ -82,27 +82,27 @@ func (d dataProcessor) ProcessMeasurements(url string, collection *mongo.Collect
 	return total, err
 }
 
-func (d dataProcessor) ProcessCities(url string, collection *mongo.Collection) (int, error) {
+func (d dataProcessor) ProcessCities(url string, collection DataAccessInterface) (int, error) {
 	resultsSlice, total, err := d.getResults(url)
 	if err != nil {
 		return 0, err
 	}
 	var cityRes cityResult
 	err = d.upsertCollection(collection, resultsSlice, &cityRes, &cityRes.Name, "name")
-	return total, nil
+	return total, err
 }
 
-func (d dataProcessor) ProcessCountries(url string, collection *mongo.Collection) (int, error) {
+func (d dataProcessor) ProcessCountries(url string, collection DataAccessInterface) (int, error) {
 	resultsSlice, total, err := d.getResults(url)
 	if err != nil {
 		return 0, err
 	}
 	var countryRes countryResult
 	err = d.upsertCollection(collection, resultsSlice, &countryRes, &countryRes.Code, "code")
-	return total, nil
+	return total, err
 }
 
-func (d dataProcessor) ProcessData(url string, collection *mongo.Collection, dataProcessFunc func(url string, collection *mongo.Collection) (int, error)) error {
+func (d dataProcessor) ProcessData(url string, collection DataAccessInterface, dataProcessFunc func(url string, collection DataAccessInterface) (int, error)) error {
 	page := 1
 	total, err := dataProcessFunc(fmt.Sprintf("%s%d", url, page), collection)
 	if err != nil {
