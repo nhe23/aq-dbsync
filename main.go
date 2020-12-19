@@ -125,6 +125,8 @@ func processAllData(d dataprocessor.DataProcessor, dataParams []dataProcessParam
 	for _, data := range dataParams {
 		logger.Log("info", fmt.Sprintf("Processing data for %s", data.url))
 		err := d.ProcessData(data.url, data.col.col, data.callBackFunc)
-		logger.Log("error", fmt.Sprintf("error processing data for url %s: %w", data.url, err))
+		if err != nil {
+			logger.Log("error", fmt.Sprintf("error processing data for url %s: %w", data.url, err))
+		}
 	}
 }
