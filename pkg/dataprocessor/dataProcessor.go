@@ -38,10 +38,11 @@ type locationResult struct {
 }
 
 type measurement struct {
-	Parameter   string    `bson:"parameter"`
-	Value       int       `bson:"value"`
-	LastUpdated time.Time `bson:"updated_at"`
-	Unit        string    `bson:"unit"`
+	Parameter    string    `bson:"parameter"`
+	Value        int       `bson:"value"`
+	LastUpdated  time.Time `bson:"lastUpdated"`
+	Unit         string    `bson:"unit"`
+	QualityIndex int       `bson:"qualityIndex"`
 }
 
 type coordinates struct {
@@ -77,8 +78,130 @@ func (d dataProcessor) ProcessMeasurements(url string, collection DataAccessInte
 	if err != nil {
 		return 0, err
 	}
-	var locResult locationResult
-	err = d.upsertCollection(collection, resultsSlice, &locResult, &locResult.Location, "location")
+	locResults := make([]locationResult, len(resultsSlice))
+	for i, result := range resultsSlice {
+		var locResult locationResult
+		resultJSON, err := json.Marshal(result)
+		if err != nil {
+			return 0, fmt.Errorf("error converting json: %w", err)
+		}
+		json.Unmarshal([]byte(resultJSON), &locResult)
+		for measurementsIndex, measurement := range locResult.Measurements {
+			if measurement.Unit != "µg/m³" {
+				locResult.Measurements[measurementsIndex].QualityIndex = 0
+			} else {
+				switch param := measurement.Parameter; param {
+				case "o3":
+					switch {
+					case (measurement.Value > 0 && measurement.Value <= 60):
+						locResult.Measurements[measurementsIndex].QualityIndex = 1
+					case (measurement.Value > 60 && measurement.Value <= 90):
+						locResult.Measurements[measurementsIndex].QualityIndex = 2
+					case (measurement.Value > 90 && measurement.Value <= 130):
+						locResult.Measurements[measurementsIndex].QualityIndex = 3
+					case (measurement.Value > 130 && measurement.Value <= 180):
+						locResult.Measurements[measurementsIndex].QualityIndex = 4
+					case (measurement.Value > 180 && measurement.Value <= 240):
+						locResult.Measurements[measurementsIndex].QualityIndex = 5
+					case (measurement.Value > 240):
+						locResult.Measurements[measurementsIndex].QualityIndex = 6
+					default:
+						locResult.Measurements[measurementsIndex].QualityIndex = 0
+					}
+				case "pm10":
+					switch {
+					case (measurement.Value > 0 && measurement.Value <= 20):
+						locResult.Measurements[measurementsIndex].QualityIndex = 1
+					case (measurement.Value > 20 && measurement.Value <= 35):
+						locResult.Measurements[measurementsIndex].QualityIndex = 2
+					case (measurement.Value > 35 && measurement.Value <= 50):
+						locResult.Measurements[measurementsIndex].QualityIndex = 3
+					case (measurement.Value > 50 && measurement.Value <= 100):
+						locResult.Measurements[measurementsIndex].QualityIndex = 4
+					case (measurement.Value > 100 && measurement.Value <= 150):
+						locResult.Measurements[measurementsIndex].QualityIndex = 5
+					case (measurement.Value > 150):
+						locResult.Measurements[measurementsIndex].QualityIndex = 6
+					default:
+						locResult.Measurements[measurementsIndex].QualityIndex = 0
+					}
+				case "pm25":
+					switch {
+					case (measurement.Value > 0 && measurement.Value <= 10):
+						locResult.Measurements[measurementsIndex].QualityIndex = 1
+					case (measurement.Value > 10 && measurement.Value <= 20):
+						locResult.Measurements[measurementsIndex].QualityIndex = 2
+					case (measurement.Value > 20 && measurement.Value <= 30):
+						locResult.Measurements[measurementsIndex].QualityIndex = 3
+					case (measurement.Value > 30 && measurement.Value <= 60):
+						locResult.Measurements[measurementsIndex].QualityIndex = 4
+					case (measurement.Value > 60 && measurement.Value <= 90):
+						locResult.Measurements[measurementsIndex].QualityIndex = 5
+					case (measurement.Value > 90):
+						locResult.Measurements[measurementsIndex].QualityIndex = 6
+					default:
+						locResult.Measurements[measurementsIndex].QualityIndex = 0
+					}
+				case "no2":
+					switch {
+					case (measurement.Value > 0 && measurement.Value <= 45):
+						locResult.Measurements[measurementsIndex].QualityIndex = 1
+					case (measurement.Value > 45 && measurement.Value <= 100):
+						locResult.Measurements[measurementsIndex].QualityIndex = 2
+					case (measurement.Value > 100 && measurement.Value <= 140):
+						locResult.Measurements[measurementsIndex].QualityIndex = 3
+					case (measurement.Value > 140 && measurement.Value <= 200):
+						locResult.Measurements[measurementsIndex].QualityIndex = 4
+					case (measurement.Value > 200 && measurement.Value <= 400):
+						locResult.Measurements[measurementsIndex].QualityIndex = 5
+					case (measurement.Value > 400):
+						locResult.Measurements[measurementsIndex].QualityIndex = 6
+					default:
+						locResult.Measurements[measurementsIndex].QualityIndex = 0
+					}
+				case "so2":
+					switch {
+					case (measurement.Value > 0 && measurement.Value <= 50):
+						locResult.Measurements[measurementsIndex].QualityIndex = 1
+					case (measurement.Value > 50 && measurement.Value <= 85):
+						locResult.Measurements[measurementsIndex].QualityIndex = 2
+					case (measurement.Value > 85 && measurement.Value <= 120):
+						locResult.Measurements[measurementsIndex].QualityIndex = 3
+					case (measurement.Value > 120 && measurement.Value <= 200):
+						locResult.Measurements[measurementsIndex].QualityIndex = 4
+					case (measurement.Value > 200 && measurement.Value <= 500):
+						locResult.Measurements[measurementsIndex].QualityIndex = 5
+					case (measurement.Value > 500):
+						locResult.Measurements[measurementsIndex].QualityIndex = 6
+					default:
+						locResult.Measurements[measurementsIndex].QualityIndex = 0
+					}
+				case "co":
+					switch {
+					case (measurement.Value > 0 && measurement.Value <= 2500):
+						locResult.Measurements[measurementsIndex].QualityIndex = 1
+					case (measurement.Value > 2500 && measurement.Value <= 3500):
+						locResult.Measurements[measurementsIndex].QualityIndex = 2
+					case (measurement.Value > 3500 && measurement.Value <= 5000):
+						locResult.Measurements[measurementsIndex].QualityIndex = 3
+					case (measurement.Value > 5000 && measurement.Value <= 10500):
+						locResult.Measurements[measurementsIndex].QualityIndex = 4
+					case (measurement.Value > 10500 && measurement.Value <= 20500):
+						locResult.Measurements[measurementsIndex].QualityIndex = 5
+					case (measurement.Value > 20500):
+						locResult.Measurements[measurementsIndex].QualityIndex = 6
+					default:
+						locResult.Measurements[measurementsIndex].QualityIndex = 0
+					}
+				default:
+					locResult.Measurements[measurementsIndex].QualityIndex = 0
+				}
+			}
+		}
+		locResults[i] = locResult
+	}
+
+	err = d.upsertMeasurements(collection, locResults)
 	return total, err
 }
 
@@ -177,6 +300,30 @@ func (d dataProcessor) upsertCollection(
 			return fmt.Errorf("error copying json: %w", err)
 		}
 		mongoOperation.SetFilter(bson.M{filterName: *filter})
+		mongoOperation.SetReplacement(resultCopy)
+		mongoOperation.SetUpsert(true)
+		operations = append(operations, mongoOperation)
+	}
+	err := bulkUpdateResult(collection, operations)
+	if err != nil {
+		return fmt.Errorf("error updating collection: %w", err)
+	}
+	return nil
+}
+
+func (d dataProcessor) upsertMeasurements(
+	collection DataAccessInterface,
+	results []locationResult,
+) error {
+	var operations []mongo.WriteModel
+
+	for _, result := range results {
+		mongoOperation := mongo.NewReplaceOneModel()
+		resultCopy, err := deepCopy(result)
+		if err != nil {
+			return fmt.Errorf("error copying json: %w", err)
+		}
+		mongoOperation.SetFilter(bson.M{"location": result.Location})
 		mongoOperation.SetReplacement(resultCopy)
 		mongoOperation.SetUpsert(true)
 		operations = append(operations, mongoOperation)

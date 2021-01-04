@@ -44,6 +44,8 @@ type collection struct {
 
 var logger log.Logger
 
+const defaultDb = "mongodb://localhost:27018"
+
 func initCollections(mongoURI string, dbName string) (collections, error) {
 	var cols collections
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
@@ -85,10 +87,13 @@ func main() {
 		aqAPI          = fs.String("aq-apiendpoint", "https://api.openaq.org", "The latest URL of the AQ api.")
 		batchSize      = fs.Int("batch-size", 1000, "Number of results per request")
 		httpRetryCount = fs.Int("http-retry-count", 3, "Number maximum retries of http requests")
-		mongoURI       = fs.String("mongo-uri", "mongodb://localhost:27018", "Number of results per request")
 		dbName         = fs.String("db-name", "AQ_DB", "Name of used mongo db")
 		schedDuration  = fs.Uint64("scheduler-seconds", 3600, "Scheduler interval in seoconds")
 	)
+	mongoURI := os.Getenv("mongodb")
+	if mongoURI == "" {
+		mongoURI = defaultDb
+	}
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
 	logger = level.NewFilter(logger, level.AllowInfo())
 	logger = log.With(logger, "TS:", log.DefaultTimestamp, "caller", log.DefaultCaller)
@@ -99,7 +104,7 @@ func main() {
 	retryClient.RetryWaitMin = 5 * time.Second
 	retryClient.Logger = logger.Log()
 	httpClient := retryClient.StandardClient()
-	cols, err := initCollections(*mongoURI, *dbName)
+	cols, err := initCollections(mongoURI, *dbName)
 	if err != nil {
 		logger.Log("err", "Error initializing mongo collections")
 		logger.Log("err", err)
@@ -126,7 +131,7 @@ func processAllData(d dataprocessor.DataProcessor, dataParams []dataProcessParam
 		logger.Log("info", fmt.Sprintf("Processing data for %s", data.url))
 		err := d.ProcessData(data.url, data.col.col, data.callBackFunc)
 		if err != nil {
-			logger.Log("error", fmt.Sprintf("error processing data for url %s: %w", data.url, err))
+			logger.Log("error", fmt.Errorf("error processing data for url %s: %w", data.url, err))
 		}
 	}
 }

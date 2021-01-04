@@ -389,3 +389,38 @@ func Test_dataProcessor_ProcessCountries(t *testing.T) {
 		})
 	}
 }
+
+func Test_dataProcessor_upsertMeasurements(t *testing.T) {
+	var results []locationResult
+	resultsInterface := []interface{}{map[string]interface{}{"city": "Ulaanbaatar", "coordinates": map[string]interface{}{"latitude": 47.91798, "longitude": 106.84806}, "country": "MN", "distance": 6.563510382773982e+06, "location": "1-r khoroolol", "measurements": []interface{}{map[string]interface{}{"lastUpdated": "2019-03-13T21:45:00.000Z", "parameter": "pm10", "sourceName": "Agaar.mn", "unit": "µg/m³", "value": 199}, map[string]interface{}{"lastUpdated": "2019-03-13T21:45:00.000Z", "parameter": "pm25", "sourceName": "Agaar.mn", "unit": "µg/m³", "value": 217}, map[string]interface{}{"lastUpdated": "2019-03-13T21:45:00.000Z", "parameter": "so2", "sourceName": "Agaar.mn", "unit": "µg/m³", "value": 21}, map[string]interface{}{"lastUpdated": "2019-03-13T21:45:00.000Z", "parameter": "no2", "sourceName": "Agaar.mn", "unit": "µg/m³", "value": 30}, map[string]interface{}{"lastUpdated": "2019-03-13T21:45:00.000Z", "parameter": "co", "sourceName": "Agaar.mn", "unit": "µg/m³", "value": 57}}}}
+	resultJSON, _ := json.Marshal(resultsInterface)
+	json.Unmarshal([]byte(resultJSON), &results)
+	type fields struct {
+		httpClient *http.Client
+		batchSize  int
+	}
+	type args struct {
+		collection DataAccessInterface
+		results    []locationResult
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{"standard", fields{http.DefaultClient, 10}, args{dataAcc, results}, false},
+		{"error", fields{http.DefaultClient, 10}, args{dataAccErr, results}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := dataProcessor{
+				httpClient: tt.fields.httpClient,
+				batchSize:  tt.fields.batchSize,
+			}
+			if err := d.upsertMeasurements(tt.args.collection, tt.args.results); (err != nil) != tt.wantErr {
+				t.Errorf("dataProcessor.upsertMeasurements() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
